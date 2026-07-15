@@ -1,12 +1,10 @@
 <template>
   <AppHeader />
   <router-view />
+  <ChatBotFloating />
 </template>
 
 <script setup>
 import AppHeader from './components/common/AppHeader.vue'
+import ChatBotFloating from './components/chatbot/ChatBotFloating.vue'
 </script>
-
-<style>
-/* 필요하면 전역 레이아웃 스타일 추가 */
-</style>
