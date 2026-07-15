@@ -160,8 +160,8 @@
                 <div class="text-sm text-[#4F6B50] mt-1">
                   {{ item.subtitle || item.addr || item.tel || '세부 정보 없음' }}
                 </div>
-                <div class="text-xs text-[#6D7E64] mt-2">
-                    {{ item.dateKey || '날짜 정보 없음' }}
+                <div v-if="item.dateKey" class="text-xs text-[#6D7E64] mt-2">
+                    {{ item.dateKey }}
                 </div>
               </div>
             </div>

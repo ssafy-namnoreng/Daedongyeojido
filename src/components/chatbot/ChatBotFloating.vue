@@ -49,7 +49,8 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { buildChatPayload, requestChatReply } from '@/services/chatService'
 import { loadRegionCategoryItems } from '@/services/calendarService'
 
-const MAX_HISTORY_LENGTH = 3
+const MAX_HISTORY_LENGTH = 6
+const CHAT_HISTORY_KEY = 'chatbot_history'
 const OUT_OF_SCOPE_PATTERN = /(날씨|기상|현재 날씨|온도|환율|주식|주가|정책|교통|지진|재난|비행기|항공|대중교통|교통상황|뉴스)/i
 
 const CATEGORY_PATTERNS = [
@@ -64,12 +65,13 @@ const CATEGORY_PATTERNS = [
 
 const open = ref(false)
 const message = ref('')
-const messages = ref([
+const defaultMessages = [
   {
     role: 'assistant',
     content: '안녕하세요! 대전 여행 정보와 이 사이트 사용 방법을 도와드릴게요.',
   },
-])
+]
+const messages = ref([...defaultMessages])
 const isLoading = ref(false)
 const errorMessage = ref('')
 const scrollRef = ref(null)
@@ -79,13 +81,40 @@ const toggleOpen = () => {
   open.value = !open.value
 }
 
-watch(messages, async () => {
-  await nextTick()
-  const el = scrollRef.value
-  if (el) el.scrollTop = el.scrollHeight
-})
+function loadChatHistory() {
+  const saved = localStorage.getItem(CHAT_HISTORY_KEY)
+  if (!saved) return
+
+  try {
+    const parsed = JSON.parse(saved)
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      messages.value = parsed
+    }
+  } catch {
+    messages.value = [...defaultMessages]
+  }
+}
+
+function saveChatHistory() {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages.value))
+}
+
+watch(
+  messages,
+  async () => {
+    saveChatHistory()
+
+    await nextTick()
+    const el = scrollRef.value
+    if (el) {
+      el.scrollTop = el.scrollHeight
+    }
+  },
+  { deep: true }
+)
 
 onMounted(async () => {
+  loadChatHistory()
   categoryData.value = await loadRegionCategoryItems()
 })
 
@@ -163,19 +192,19 @@ const send = async () => {
 <style scoped>
 .chatbot-wrapper {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 1rem;
+  bottom: 1rem;
   z-index: 60;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .chatbot-toggle {
   background: #3f2b20;
   color: #f2e8d3;
-  padding: 12px 14px;
+  padding: 0.9rem 1.1rem;
   border-radius: 999px;
   box-shadow: 0 10px 24px rgba(63, 43, 32, 0.25);
   border: 1px solid rgba(224, 186, 115, 0.4);
@@ -188,7 +217,8 @@ const send = async () => {
 }
 
 .chatbot-panel {
-  width: 340px;
+  width: min(360px, 90vw);
+  max-width: 100%;
   background: #f8f1de;
   border-radius: 18px;
   box-shadow: 0 18px 50px rgba(2, 6, 23, 0.18);
@@ -218,9 +248,10 @@ const send = async () => {
 .chatbot-body {
   padding: 14px 16px;
   min-height: 210px;
-  max-height: 400px;
+  max-height: 60vh;
   overflow-y: auto;
   background: #fff7e5;
+  box-sizing: border-box;
 }
 
 .chat-row {
@@ -242,7 +273,7 @@ const send = async () => {
   align-items: center;
   padding: 10px 14px;
   border-radius: 18px;
-  max-width: 75%;
+  max-width: 100%;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -258,45 +289,46 @@ const send = async () => {
 
 .chat-loading {
   color: #64748b;
-  font-size: 13px;
-  padding: 6px 0;
 }
 
 .chat-error {
-  color: #9d2a2b;
-  font-size: 13px;
+  color: #c81d1d;
   margin-top: 8px;
 }
 
 .chatbot-input {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 14px;
-  border-top: 1px solid rgba(162, 113, 44, 0.16);
-  background: #f2e8d3;
+  padding: 14px 16px;
+  border-top: 1px solid rgba(162, 113, 44, 0.15);
+  background: #f8f1de;
+  box-sizing: border-box;
 }
 
 .chatbot-input input {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(131, 153, 123, 0.4);
-  background: #fff;
-  color: #3f2b20;
+  border: 1px solid #d9d2c4;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .chatbot-input button {
+  min-width: 90px;
   padding: 10px 14px;
-  background: #a2712c;
-  color: #f2e8d3;
-  border: none;
   border-radius: 12px;
+  border: none;
+  background: #3f2b20;
+  color: #f2e8d3;
   cursor: pointer;
-  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .chatbot-input button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 </style>

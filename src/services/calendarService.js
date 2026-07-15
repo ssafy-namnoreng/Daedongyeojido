@@ -76,6 +76,28 @@ export function normalizeEventItem(item, fileName) {
   }
 }
 
+export function normalizeCategoryItem(item, fileName) {
+  const title = item.title || item.name
+  if (!title) return null
+
+  return {
+    id:
+      item.contentid ||
+      `${fileName}-${title}-${Math.random()}`,
+    title,
+    subtitle: item.addr1 || item.addr2 || item.tel || '',
+    addr: item.addr1 || '',
+    tel: item.tel || '',
+    image: item.firstimage || item.firstimage2 || '',
+    time: item.eventstartdate ? parseKmaTime(item.eventstartdate) : '',
+    color: normalizeCategory(fileName),
+    dateKey:
+      parseEventDate(item.eventstartdate) ||
+      parseEventDate(item.eventenddate) ||
+      null,
+  }
+}
+
 export async function loadRegionCalendarEvents() {
   const events = {}
   for (const { fileName } of REGION_FILES) {
@@ -116,7 +138,7 @@ export async function loadRegionCategoryItems() {
       }
 
       categoryItems[category] = json.items
-        .map(item => normalizeEventItem(item, fileName))
+        .map(item => normalizeCategoryItem(item, fileName))
         .filter(Boolean)
         .map(normalized => ({
           ...normalized,
