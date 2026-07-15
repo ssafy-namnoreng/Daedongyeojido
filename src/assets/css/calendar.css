@@ -1,0 +1,14 @@
+.calendar-page {
+  /* 필요하면 캘린더 view 전체 스타일 추가 */
+}
+
+.calendar-hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.calendar-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.calendar-min-height-90 {
+  min-height: 90px;
+}
