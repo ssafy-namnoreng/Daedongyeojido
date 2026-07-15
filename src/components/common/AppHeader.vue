@@ -10,6 +10,7 @@
       </div>
 
       <nav class="main-nav">
+        <router-link to="/">홈</router-link>
         <router-link to="/board">커뮤니티 게시판</router-link>
         <router-link to="/calendar">일정 캘린더</router-link>
       </nav>
@@ -44,5 +45,10 @@ import logoUrl from '../../assets/images/dadong.png'
 }
 .brand-text .title { font-weight:700; font-size:18px; color:#3F2B20; }
 .brand-text .subtitle { font-size:12px; color:#64748b; }
-.main-nav a { margin-left:18px; color:#1f2937; font-weight:600; text-decoration:none; }
+.main-nav a {
+  margin-left:18px;
+  color:#1f2937;
+  font-weight:600;
+  text-decoration:none;
+}
 </style>
