@@ -19,8 +19,9 @@
       </div>
 
       <nav class="nav-links">
-        <a href="#" @click.prevent="goToHome">커뮤니티 게시판</a>
-        <a href="#" @click.prevent="goToHome">일정 캘린더</a>
+        <a href="#" @click.prevent="goToHome">홈</a>
+        <a href="#" @click.prevent="goToBoard">커뮤니티 게시판</a>
+        <a href="#">일정 캘린더</a>
       </nav>
     </header>
 
@@ -445,8 +446,14 @@ function sendChatMessage() {
   }, 700)
 }
 
+// 홈 화면으로 이동하는 라우터 함수
 function goToHome() {
   router.push('/')
+}
+
+// 게시판 목록 화면으로 이동하는 라우터 함수 (메뉴 활성화용)
+function goToBoard() {
+  router.push('/board')
 }
 </script>
 
@@ -464,11 +471,20 @@ function goToHome() {
 }
 
 .app-shell {
+  /* HomeView와 동일한 컬러 테마 변수 이식 */
+  --paper: #f2e8d3;
+  --paper-deep: #e8dab5;
+  --ink: #2c2318;
+  --ink-soft: #6b5b45;
+  --brass: #a2712c;
+  --pine: #33553e;
+  --route: #a63c26;
+
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
   background: linear-gradient(135deg, #fcf7e8 0%, #f7efe0 50%, #f2efdf 100%);
-  color: #2f2922;
+  color: var(--ink);
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
 }
 
@@ -501,65 +517,88 @@ function goToHome() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  background: #f6e8b5;
-  border-bottom: 1px solid #e2cf86;
-  box-shadow: 0 4px 14px rgba(95, 75, 47, 0.08);
+  padding: 22px 32px;
+  background: rgba(248, 241, 224, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(44, 35, 24, 0.14);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
 }
 
 .brand-seal {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6d7b34, #4d5f25);
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(77, 95, 37, 0.2);
+  border-radius: 50%;
+  background: var(--paper-deep);
+  border: 2px solid var(--brass);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--brass);
   overflow: hidden;
 }
 
 .brand-seal img {
-  width: 100%;
-  height: 100%;
+  width: 78%;
+  height: 78%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .brand-copy h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: #2f2922;
   font-family: 'Noto Serif KR', serif;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--ink);
 }
 
 .brand-copy p {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: #7a694f;
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--brass);
+  text-transform: uppercase;
 }
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 28px;
 }
 
 .nav-links a {
-  color: #4f3f2e;
   text-decoration: none;
+  color: var(--ink-soft);
   font-weight: 700;
   font-size: 14px;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 1.5px;
+  background: var(--route);
+  transition: width 0.2s ease;
 }
 
 .nav-links a:hover {
-  color: #6d7b34;
+  color: var(--ink);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
 }
 
 .intro-section {
@@ -796,10 +835,10 @@ tbody tr:hover {
 }
 
 .chatbot-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 999;
+  position: fixed;   /* 화면에 고정 */
+  bottom: 20px;      /* 아래에서 20px 띄우기 */
+  right: 20px;       /* 우측에서 20px 띄우기 */
+  z-index: 999;      /* 다른 화면 요소보다 위에 뜨도록 설정 */
   display: flex;
   flex-direction: column;
   align-items: flex-end;

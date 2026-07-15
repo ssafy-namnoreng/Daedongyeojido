@@ -1,10 +1,9 @@
 <template>
-  <AppHeader />
   <router-view />
 </template>
 
 <script setup>
-import AppHeader from './components/common/AppHeader.vue'
+// 사용하지 않는 AppHeader import 코드를 삭제합니다
 </script>
 
 <style>
