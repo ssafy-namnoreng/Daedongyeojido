@@ -1,13 +1,13 @@
 const BASE_PATH = '/data/대전_충청권/'
 const REGION_FILES = [
-  '대전_충청권_축제공연행사.json',
-  '대전_충청권_관광지.json',
-  '대전_충청권_음식점.json',
-  '대전_충청권_숙박.json',
-  '대전_충청권_레포츠.json',
-  '대전_충청권_문화시설.json',
-  '대전_충청권_쇼핑.json',
-  '대전_충청권_여행코스.json'
+  { fileName: '대전_충청권_관광지.json', category: '관광지' },
+  { fileName: '대전_충청권_레포츠.json', category: '레포츠' },
+  { fileName: '대전_충청권_문화시설.json', category: '문화시설' },
+  { fileName: '대전_충청권_쇼핑.json', category: '쇼핑' },
+  { fileName: '대전_충청권_숙박.json', category: '숙박' },
+  { fileName: '대전_충청권_여행코스.json', category: '여행코스' },
+  { fileName: '대전_충청권_음식점.json', category: '음식점' },
+  { fileName: '대전_충청권_축제공연행사.json', category: '축제/공연/행사' }
 ]
 
 export function parseKmaDate(dateString) {
@@ -67,7 +67,7 @@ export function normalizeEventItem(item, fileName) {
 
 export async function loadRegionCalendarEvents() {
   const events = {}
-  for (const fileName of REGION_FILES) {
+  for (const { fileName } of REGION_FILES) {
     try {
       const res = await fetch(BASE_PATH + fileName)
       if (!res.ok) continue
@@ -85,4 +85,37 @@ export async function loadRegionCalendarEvents() {
     }
   }
   return events
+}
+
+export async function loadRegionCategoryItems() {
+  const categoryItems = {}
+
+  for (const { fileName, category } of REGION_FILES) {
+    try {
+      const res = await fetch(BASE_PATH + fileName)
+      if (!res.ok) {
+        categoryItems[category] = []
+        continue
+      }
+
+      const json = await res.json()
+      if (!json.items || !Array.isArray(json.items)) {
+        categoryItems[category] = []
+        continue
+      }
+
+      categoryItems[category] = json.items
+        .map(item => normalizeEventItem(item, fileName))
+        .filter(Boolean)
+        .map(normalized => ({
+          ...normalized,
+          category
+        }))
+    } catch (error) {
+      console.warn('calendarService loadCategoryItems error:', fileName, error)
+      categoryItems[category] = []
+    }
+  }
+
+  return categoryItems
 }

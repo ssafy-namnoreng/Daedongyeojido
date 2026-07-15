@@ -114,5 +114,7 @@ export function clearCalendarEvents(dateKey) {
 }
 
 export function moveCalendarMonth(delta) {
-  calendarStore.currentMonth.setMonth(calendarStore.currentMonth.getMonth() + delta)
+  const nextMonth = new Date(calendarStore.currentMonth)
+  nextMonth.setMonth(nextMonth.getMonth() + delta)
+  calendarStore.currentMonth = nextMonth
 }
