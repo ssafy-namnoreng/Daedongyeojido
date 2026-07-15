@@ -1,8 +1,12 @@
-<!-- filepath: c:\team_project\Daedongyeojido\src\App.vue -->
 <template>
-  <HomeView />
+  <AppHeader />
+  <router-view />
 </template>
 
 <script setup>
-import HomeView from './views/HomeView.vue'
+import AppHeader from './components/common/AppHeader.vue'
 </script>
+
+<style>
+/* 필요하면 전역 레이아웃 스타일 추가 */
+</style>
