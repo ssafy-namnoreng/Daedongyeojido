@@ -1,5 +1,5 @@
 <template>
-  <div class="chatbot-wrapper">
+  <div class="chatbot-wrapper" :class="{ 'is-open': open }">
     <button
       v-if="!open"
       class="chatbot-toggle"
@@ -330,5 +330,43 @@ const send = async () => {
 .chatbot-input button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* 모바일: 챗봇이 열리면 전체 화면으로 표시 */
+@media (max-width: 480px) {
+  .chatbot-wrapper.is-open {
+    inset: 0;
+    right: 0;
+    bottom: 0;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  .chatbot-wrapper.is-open .chatbot-panel {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chatbot-wrapper.is-open .chatbot-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .chatbot-wrapper.is-open .chatbot-header {
+    padding: 16px;
+    font-size: 1.05rem;
+  }
+
+  .chatbot-header button {
+    font-size: 22px;
+    padding: 4px 8px;
+  }
 }
 </style>
