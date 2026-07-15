@@ -1,13 +1,13 @@
-// filepath: c:\team_project\Daedongyeojido\src\stores\board.js
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-// 지도 팔레트와 통일된 카테고리 색상
+const STORAGE_KEY = 'daedong_board_posts'
+
 const CATEGORY_COLORS = {
-  '⛰️ 관광': '#33553E', // 소나무 그린
-  '🍲 맛집': '#A63C26', // 벽돌 레드
-  '🎪 축제': '#A2712C', // 놋쇠 브라스
-  '💬 자유': '#6B5B45'  // 잉크 소프트
+  '⛰️ 관광': '#33553E',
+  '🍲 맛집': '#A63C26',
+  '🎪 축제': '#A2712C',
+  '💬 자유': '#6B5B45'
 }
 
 const CATEGORIES = [
@@ -17,7 +17,6 @@ const CATEGORIES = [
   { filterName: '💬 자유', name: '자유게시판', emoji: '💬' }
 ]
 
-// 데모용 목데이터 (백엔드 연결 전까지 사용)
 const MOCK_POSTS = [
   {
     id: 5,
@@ -76,45 +75,99 @@ const MOCK_POSTS = [
   }
 ]
 
+function loadPostsFromStorage() {
+  if (typeof window === 'undefined') return [...MOCK_POSTS]
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return [...MOCK_POSTS]
+
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...MOCK_POSTS]
+  } catch (error) {
+    console.warn('게시글 저장소 로딩 실패:', error)
+    return [...MOCK_POSTS]
+  }
+}
+
+function savePostsToStorage(posts) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
+}
+
+function normalizePassword(password) {
+  return String(password || '').replace(/\D/g, '').slice(0, 4)
+}
+
 export const useBoardStore = defineStore('board', () => {
-  const posts = ref([...MOCK_POSTS])
+  const posts = ref(loadPostsFromStorage())
   const categories = ref(CATEGORIES)
 
-  const nextId = computed(() =>
-    posts.value.length ? Math.max(...posts.value.map((p) => p.id)) + 1 : 1
-  )
+  const nextId = computed(() => {
+    return posts.value.length
+      ? Math.max(...posts.value.map((p) => p.id)) + 1
+      : 1
+  })
 
   function addPost({ category, author, password, title, content }) {
+    const safePassword = normalizePassword(password)
+    if (!/^\d{4}$/.test(safePassword)) return null
+
     const newPost = {
       id: nextId.value,
       category,
       author,
-      password,
+      password: safePassword,
       content,
       title,
       views: 0,
       likes: 0,
       createdAt: new Date().toISOString()
     }
+
     posts.value.unshift(newPost)
+    savePostsToStorage(posts.value)
     return newPost
+  }
+
+  function verifyPassword(id, password) {
+    const post = posts.value.find((p) => p.id === id)
+    return post ? post.password === normalizePassword(password) : false
+  }
+
+  function updatePost(id, password, changes) {
+    const post = posts.value.find((p) => p.id === id)
+    if (!post) return false
+    if (!verifyPassword(id, password)) return false
+
+    Object.assign(post, changes)
+    savePostsToStorage(posts.value)
+    return true
   }
 
   function incrementViews(id) {
     const post = posts.value.find((p) => p.id === id)
-    if (post) post.views += 1
+    if (post) {
+      post.views += 1
+      savePostsToStorage(posts.value)
+    }
   }
 
   function likePost(id) {
     const post = posts.value.find((p) => p.id === id)
-    if (post) post.likes += 1
+    if (post) {
+      post.likes += 1
+      savePostsToStorage(posts.value)
+    }
   }
 
   function deletePost(id, password) {
     const post = posts.value.find((p) => p.id === id)
     if (!post) return false
-    if (post.password !== password) return false
+    if (post.password !== normalizePassword(password)) return false
+
     posts.value = posts.value.filter((p) => p.id !== id)
+    savePostsToStorage(posts.value)
     return true
   }
 
@@ -126,6 +179,8 @@ export const useBoardStore = defineStore('board', () => {
     posts,
     categories,
     addPost,
+    verifyPassword,
+    updatePost,
     incrementViews,
     likePost,
     deletePost,

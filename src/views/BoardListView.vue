@@ -195,6 +195,7 @@
         <div class="modal-content">{{ selectedPost.content }}</div>
         <div class="modal-actions">
           <button class="write-btn" @click="likePost(selectedPost)">👍 추천하기</button>
+          <button class="secondary-btn" @click="promptPasswordCheck('edit')">✏️ 수정하기</button>
           <button class="secondary-btn" @click="promptPasswordCheck('delete')">🗑️ 삭제하기</button>
           <button class="secondary-btn" @click="selectedPost = null">닫기</button>
         </div>
@@ -222,7 +223,14 @@
           </label>
           <label>
             비밀번호
-            <input v-model="newPost.password" type="password" placeholder="삭제 시 필요한 비밀번호" />
+            <input
+              v-model="newPost.password"
+              type="password"
+              inputmode="numeric"
+              maxlength="4"
+              placeholder="수정·삭제용 숫자 4자리"
+              @input="newPost.password = sanitizePin(newPost.password)"
+            />
           </label>
           <label class="full">
             제목
@@ -240,6 +248,29 @@
       </div>
     </div>
 
+    <div v-if="isEditModalOpen" class="modal-overlay" @click.self="isEditModalOpen = false">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>✏️ 게시글 수정</h3>
+          <button @click="isEditModalOpen = false">×</button>
+        </div>
+        <div class="form-grid">
+          <label class="full">
+            제목
+            <input v-model="editPost.title" type="text" placeholder="제목을 입력하세요" />
+          </label>
+          <label class="full">
+            내용
+            <textarea v-model="editPost.content" rows="6" placeholder="내용을 작성하세요"></textarea>
+          </label>
+        </div>
+        <div class="form-actions" style="margin-top: 18px;">
+          <button class="write-btn" @click="submitEditPost">수정 완료</button>
+          <button class="secondary-btn" @click="isEditModalOpen = false">취소</button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="isPasswordModalOpen" class="modal-overlay" @click.self="isPasswordModalOpen = false">
       <div class="modal-card compact">
         <div class="modal-head">
@@ -249,7 +280,15 @@
         <div class="form-grid">
           <label>
             게시글 비밀번호
-            <input v-model="passwordInput" type="password" placeholder="비밀번호를 입력하세요" @keyup.enter="validatePasswordAndCommit" />
+            <input
+              v-model="passwordInput"
+              type="password"
+              inputmode="numeric"
+              maxlength="4"
+              placeholder="숫자 4자리"
+              @input="passwordInput = sanitizePin(passwordInput)"
+              @keyup.enter="validatePasswordAndCommit"
+            />
           </label>
           <p v-if="passwordError" class="error">비밀번호가 일치하지 않습니다.</p>
         </div>
@@ -366,10 +405,19 @@ function openCreatePostModal() {
 }
 
 function submitNewPost() {
-  if (!newPost.value.author || !newPost.value.password || !newPost.value.title || !newPost.value.content) {
+  if (!newPost.value.author || !newPost.value.title || !newPost.value.content) {
+    showToast('작성자·제목·내용을 모두 입력해 주세요')
     return
   }
-  store.addPost({ ...newPost.value })
+  if (!/^\d{4}$/.test(newPost.value.password)) {
+    showToast('비밀번호는 숫자 4자리여야 합니다')
+    return
+  }
+  const created = store.addPost({ ...newPost.value })
+  if (!created) {
+    showToast('게시글 등록에 실패했습니다')
+    return
+  }
   isCreateModalOpen.value = false
   selectedCategory.value = '전체'
   currentPage.value = 1
@@ -381,6 +429,11 @@ const passwordInput = ref('')
 const passwordError = ref(false)
 const pendingAction = ref(null)
 
+// 비밀번호는 숫자 4자리로만 관리 (숫자 외 제거 + 4자리 컷)
+function sanitizePin(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 4)
+}
+
 function promptPasswordCheck(action) {
   pendingAction.value = action
   passwordInput.value = ''
@@ -389,7 +442,9 @@ function promptPasswordCheck(action) {
 }
 
 function validatePasswordAndCommit() {
-  if (pendingAction.value === 'delete' && selectedPost.value) {
+  if (!selectedPost.value) return
+
+  if (pendingAction.value === 'delete') {
     const success = store.deletePost(selectedPost.value.id, passwordInput.value)
     if (success) {
       isPasswordModalOpen.value = false
@@ -398,6 +453,47 @@ function validatePasswordAndCommit() {
     } else {
       passwordError.value = true
     }
+  } else if (pendingAction.value === 'edit') {
+    if (store.verifyPassword(selectedPost.value.id, passwordInput.value)) {
+      verifiedPassword.value = sanitizePin(passwordInput.value)
+      isPasswordModalOpen.value = false
+      openEditModal()
+    } else {
+      passwordError.value = true
+    }
+  }
+}
+
+// 수정 모달 상태
+const isEditModalOpen = ref(false)
+const verifiedPassword = ref('')
+const editPost = ref({ id: null, title: '', content: '' })
+
+// 비밀번호 확인 통과 후, 현재 글 내용으로 수정 폼을 채워 연다
+function openEditModal() {
+  const p = selectedPost.value
+  if (!p) return
+  editPost.value = { id: p.id, title: p.title, content: p.content }
+  isEditModalOpen.value = true
+}
+
+function submitEditPost() {
+  if (!editPost.value.title.trim() || !editPost.value.content.trim()) {
+    showToast('제목과 내용을 모두 입력해 주세요')
+    return
+  }
+
+  const success = store.updatePost(editPost.value.id, verifiedPassword.value, {
+    title: editPost.value.title.trim(),
+    content: editPost.value.content.trim()
+  })
+
+  if (success) {
+    isEditModalOpen.value = false
+    verifiedPassword.value = ''
+    showToast('게시글이 수정되었습니다')
+  } else {
+    showToast('수정에 실패했습니다')
   }
 }
 
