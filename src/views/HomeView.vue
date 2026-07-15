@@ -1,4 +1,14 @@
 <!-- filepath: c:\team_project\Daedongyeojido\src\views\HomeView.vue -->
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goToBoard() {
+  router.push('/board')
+}
+</script>
+
 <template>
   <div class="app-shell">
     <!-- 배경 등고선 -->
@@ -15,15 +25,16 @@
           <img src="/favicon-source.png" alt="대동여지도 로고" />
         </div>
         <div class="brand-copy">
-          <h1><span>대동여지도</span></h1>
+          <h1>대동여지도</h1>
           <p>DAEDONGYEOJIDO · 동네를 그리다</p>
         </div>
       </div>
 
       <nav class="nav-links">
-        <a href="#">커뮤니티 게시판</a>
+        <a href="#" @click.prevent="goToBoard">커뮤니티 게시판</a>
         <a href="#">일정 캘린더</a>
       </nav>
+
     </header>
 
     <main class="main">
@@ -37,7 +48,7 @@
 
         <div class="hero-text">
           <span class="coord-tag">N 36°21' · E 127°23' — DAEJEON</span>
-          <h2>밀가루 너머,<br />진짜 로컬을 걷다</h2>
+          <h2>밀가루 너머,<br />진짜 로컬을 경험하다</h2>
           <p>대동여지도 : 대전 동네 여행 지도</p>
 
           <div class="hero-actions">
