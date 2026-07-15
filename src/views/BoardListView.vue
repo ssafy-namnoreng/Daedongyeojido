@@ -1,4 +1,3 @@
-<!-- filepath: c:\team_project\Daedongyeojido\src\views\BoardListView.vue -->
 <template>
   <div class="app-shell">
     <svg class="contour-bg" viewBox="0 0 1200 1600" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
@@ -141,6 +140,8 @@
     </footer>
 
     <div class="chatbot-float">
+      <MyButton text="AI 가이드" @click="isChatOpen = true" />
+      
       <div v-if="isChatOpen" class="chat-panel">
         <div class="chat-header">
           <div>
@@ -151,120 +152,109 @@
         </div>
 
         <div class="chat-body" ref="scrollRef">
-          <div
-            v-for="(msg, idx) in chatMessages"
-            :key="idx"
-            :class="msg.role === 'user' ? 'bubble user' : 'bubble bot'"
+          <div 
+            v-for="(msg, idx) in chatMessages" 
+            :key="idx" 
+            :class="['bubble', msg.role]"
           >
             {{ msg.content }}
           </div>
-
           <div v-if="isChatTyping" class="bubble bot typing">
-            <span>●</span><span>●</span><span>●</span>
+            <div class="loading-dots">
+              <span>●</span><span>●</span><span>●</span>
+            </div>
           </div>
         </div>
 
         <div class="chat-input-row">
-          <input
-            v-model="userQuery"
+          <input 
+            v-model="userQuery" 
+            type="text" 
+            placeholder="메시지를 입력해 주세요..." 
             @keyup.enter="sendChatMessage"
-            type="text"
-            placeholder="대전에 대해 물어보세요!"
           />
-          <button @click="sendChatMessage">전송</button>
+          <button @click="sendChatMessage" class="send-btn">전송</button>
         </div>
       </div>
-
-      <button class="chat-toggle" @click="isChatOpen = !isChatOpen">💬</button>
     </div>
 
-    <div v-if="selectedPost" class="modal-overlay">
+    <div v-if="selectedPost" class="modal-overlay" @click.self="selectedPost = null">
       <div class="modal-card">
         <div class="modal-head">
-          <span
-            class="post-tag"
-            :style="{ backgroundColor: getCategoryColor(selectedPost.category) }"
-          >
-            {{ selectedPost.category }}
-          </span>
+          <h3>{{ selectedPost.title }}</h3>
           <button @click="selectedPost = null">×</button>
         </div>
-
-        <h3>{{ selectedPost.title }}</h3>
-
         <div class="meta">
-          <span>👤 {{ selectedPost.author }}</span>
+          <span>🏷️ {{ selectedPost.category }}</span>
+          <span>✍️ {{ selectedPost.author }}</span>
+          <span>👀 조회수 {{ selectedPost.views }}</span>
+          <span>👍 추천수 {{ selectedPost.likes }}</span>
           <span>📅 {{ formatPCDate(selectedPost.createdAt) }}</span>
-          <span>👀 {{ selectedPost.views }}</span>
-          <span>👍 {{ selectedPost.likes }}</span>
         </div>
-
-        <p class="modal-content">{{ selectedPost.content }}</p>
-
+        <div class="modal-content">{{ selectedPost.content }}</div>
         <div class="modal-actions">
           <button class="write-btn" @click="likePost(selectedPost)">👍 추천하기</button>
-          <button class="secondary-btn" @click="promptPasswordCheck('delete')">🗑 삭제</button>
-          <button class="secondary-btn" @click="selectedPost = null">목록으로</button>
+          <button class="secondary-btn" @click="promptPasswordCheck('delete')">🗑️ 삭제하기</button>
+          <button class="secondary-btn" @click="selectedPost = null">닫기</button>
         </div>
       </div>
     </div>
 
-    <div v-if="isCreateModalOpen" class="modal-overlay">
+    <div v-if="isCreateModalOpen" class="modal-overlay" @click.self="isCreateModalOpen = false">
       <div class="modal-card">
         <div class="modal-head">
           <h3>✏️ 새 게시글 작성</h3>
           <button @click="isCreateModalOpen = false">×</button>
         </div>
-
-        <form @submit.prevent="submitNewPost" class="form-grid">
+        <div class="form-grid">
           <label>
-            <span>분류 선택 *</span>
-            <select v-model="newPost.category" required>
-              <option value="⛰️ 관광">⛰️ 관광지</option>
-              <option value="🍲 맛집">🍲 맛집</option>
-              <option value="🎪 축제">🎪 축제/행사</option>
-              <option value="💬 자유">💬 자유게시판</option>
+            분류 선택
+            <select v-model="newPost.category">
+              <option v-for="cat in categories" :key="cat.filterName" :value="cat.name">
+                {{ cat.emoji }} {{ cat.name }}
+              </option>
             </select>
           </label>
-
           <label>
-            <span>작성자 이름 *</span>
-            <input v-model="newPost.author" type="text" required />
+            작성자명
+            <input v-model="newPost.author" type="text" placeholder="이름을 입력하세요" />
           </label>
-
           <label>
-            <span>비밀번호 (수정/삭제용) *</span>
-            <input v-model="newPost.password" type="password" maxlength="4" required />
+            비밀번호
+            <input v-model="newPost.password" type="password" placeholder="삭제 시 필요한 비밀번호" />
           </label>
-
-          <label>
-            <span>게시글 제목 *</span>
-            <input v-model="newPost.title" type="text" required />
-          </label>
-
           <label class="full">
-            <span>게시글 내용 *</span>
-            <textarea v-model="newPost.content" rows="5" required></textarea>
+            제목
+            <input v-model="newPost.title" type="text" placeholder="제목을 입력하세요" />
           </label>
-
-          <div class="form-actions full">
-            <button type="button" class="secondary-btn" @click="isCreateModalOpen = false">취소</button>
-            <button type="submit" class="write-btn">게시글 올리기</button>
-          </div>
-        </form>
+          <label class="full">
+            내용
+            <textarea v-model="newPost.content" rows="6" placeholder="내용을 작성하세요"></textarea>
+          </label>
+        </div>
+        <div class="form-actions" style="margin-top: 18px;">
+          <button class="write-btn" @click="submitNewPost">등록하기</button>
+          <button class="secondary-btn" @click="isCreateModalOpen = false">취소</button>
+        </div>
       </div>
     </div>
 
-    <div v-if="isPasswordModalOpen" class="modal-overlay">
+    <div v-if="isPasswordModalOpen" class="modal-overlay" @click.self="isPasswordModalOpen = false">
       <div class="modal-card compact">
-        <h3>🔒 게시글 작성자 확인</h3>
-        <p>게시글 작성 시 등록한 비밀번호를 입력해주세요.</p>
-        <input v-model="passwordInput" type="password" maxlength="4" />
-        <p v-if="passwordError" class="error">비밀번호가 틀렸습니다.</p>
-
-        <div class="modal-actions">
-          <button class="secondary-btn" @click="isPasswordModalOpen = false">취소</button>
+        <div class="modal-head">
+          <h3>🔒 비밀번호 확인</h3>
+          <button @click="isPasswordModalOpen = false">×</button>
+        </div>
+        <div class="form-grid">
+          <label>
+            게시글 비밀번호
+            <input v-model="passwordInput" type="password" placeholder="비밀번호를 입력하세요" @keyup.enter="validatePasswordAndCommit" />
+          </label>
+          <p v-if="passwordError" class="error">비밀번호가 일치하지 않습니다.</p>
+        </div>
+        <div class="form-actions" style="margin-top: 18px;">
           <button class="write-btn" @click="validatePasswordAndCommit">확인</button>
+          <button class="secondary-btn" @click="isPasswordModalOpen = false">취소</button>
         </div>
       </div>
     </div>
@@ -278,6 +268,7 @@ import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useBoardStore } from '@/store/board'
+import MyButton from '@/components/MyButton.vue'
 
 const router = useRouter()
 const store = useBoardStore()
@@ -806,9 +797,9 @@ tbody tr:hover {
 
 .chatbot-float {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 50;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
