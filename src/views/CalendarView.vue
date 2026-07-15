@@ -1,4 +1,22 @@
 <template>
+  <header class="topbar">
+    <div class="brand" @click="goToHome">
+      <div class="brand-seal">
+        <img src="/favicon-source.png" alt="대동여지도 로고" />
+      </div>
+      <div class="brand-copy">
+        <h1>대동여지도</h1>
+        <p>DAEDONGYEOJIDO · 동네를 그리다</p>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="#" @click.prevent="goToHome">홈</a>
+      <a href="#" @click.prevent="goToBoard">커뮤니티 게시판</a>
+      <a href="#" @click.prevent="goToCalendar">일정 캘린더</a>
+    </nav>
+  </header>
+
   <section class="calendar-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-[#2B3F2F]">나만의 여행 플래너</h2>
@@ -229,6 +247,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import '@/assets/css/calendar.css'
 import defaultImage from '@/assets/images/dadong.png'
 import {
@@ -240,6 +259,20 @@ import {
   moveCalendarMonth
 } from '@/store/calendar'
 import { loadRegionCategoryItems } from '@/services/calendarService'
+
+const router = useRouter()
+
+function goToHome() {
+  router.push('/')
+}
+
+function goToBoard() {
+  router.push('/board')
+}
+
+function goToCalendar() {
+  router.push('/calendar')
+}
 
 const form = reactive({
   title: '',
@@ -467,3 +500,108 @@ onMounted(async () => {
   await loadCategoryLists()
 })
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap');
+
+/* 다른 페이지(홈·게시판)와 동일한 지도풍 상단바 */
+.topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 32px;
+  background: rgba(248, 241, 224, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(44, 35, 24, 0.14);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.brand-seal {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8dab5;
+  border: 2px solid #a2712c;
+  box-shadow: 0 0 0 3px #f2e8d3, 0 0 0 4px #a2712c;
+  overflow: hidden;
+}
+
+.brand-seal img {
+  width: 78%;
+  height: 78%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.brand-copy h1 {
+  margin: 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #2c2318;
+}
+
+.brand-copy p {
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #a2712c;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #6b5b45;
+  font-weight: 700;
+  font-size: 14px;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 1.5px;
+  background: #a63c26;
+  transition: width 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: #2c2318;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    padding: 16px 18px;
+  }
+
+  .nav-links {
+    gap: 16px;
+  }
+}
+</style>

@@ -7,6 +7,10 @@ const router = useRouter()
 function goToBoard() {
   router.push('/board')
 }
+
+function goToCalendar() {
+  router.push('/calendar')
+}
 </script>
 
 <template>
@@ -32,7 +36,7 @@ function goToBoard() {
 
       <nav class="nav-links">
         <a href="#" @click.prevent="goToBoard">커뮤니티 게시판</a>
-        <a href="#">일정 캘린더</a>
+        <a href="#" @click.prevent="goToCalendar">일정 캘린더</a>
       </nav>
 
     </header>

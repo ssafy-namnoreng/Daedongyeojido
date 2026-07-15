@@ -21,7 +21,7 @@
       <nav class="nav-links">
         <a href="#" @click.prevent="goToHome">홈</a>
         <a href="#" @click.prevent="goToBoard">커뮤니티 게시판</a>
-        <a href="#">일정 캘린더</a>
+        <a href="#" @click.prevent="goToCalendar">일정 캘린더</a>
       </nav>
     </header>
 
@@ -454,6 +454,11 @@ function goToHome() {
 // 게시판 목록 화면으로 이동하는 라우터 함수 (메뉴 활성화용)
 function goToBoard() {
   router.push('/board')
+}
+
+// 일정 캘린더 화면으로 이동하는 라우터 함수
+function goToCalendar() {
+  router.push('/calendar')
 }
 </script>
 
