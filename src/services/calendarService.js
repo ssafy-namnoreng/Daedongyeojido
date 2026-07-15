@@ -21,6 +21,10 @@ export function parseKmaDate(dateString) {
   return `${y}-${m}-${d}`
 }
 
+export function parseEventDate(dateString) {
+  return parseKmaDate(dateString)
+}
+
 export function parseKmaTime(dateString) {
   if (!dateString) return '12:00'
   const s = String(dateString)
@@ -45,23 +49,52 @@ export function normalizeCategory(fileName) {
 }
 
 export function normalizeEventItem(item, fileName) {
+  const startDate = parseEventDate(item.eventstartdate)
+  const endDate = parseEventDate(item.eventenddate)
   const dateKey =
-    parseKmaDate(item.modifiedtime) ||
-    parseKmaDate(item.createdtime) ||
-    parseKmaDate(item.createdTime)
+    startDate ||
+    endDate ||
+    parseEventDate(item.modifiedtime) ||
+    parseEventDate(item.createdtime) ||
+    parseEventDate(item.createdTime)
 
   if (!dateKey) return null
 
   return {
-    id: item.contentid || `${fileName}-${item.title || item.name || Math.random()}`,
+    id:
+      item.contentid ||
+      `${fileName}-${item.title || item.name || Math.random()}`,
     title: item.title || item.name || '알 수 없는 일정',
     subtitle: item.addr1 || item.addr2 || item.tel || '',
     addr: item.addr1 || '',
     tel: item.tel || '',
     image: item.firstimage || item.firstimage2 || '',
-    time: parseKmaTime(item.modifiedtime || item.createdtime || item.createdTime),
+    time:
+      startDate || parseKmaTime(item.modifiedtime) || parseKmaTime(item.createdtime) || '12:00',
     color: normalizeCategory(fileName),
-    dateKey
+    dateKey,
+  }
+}
+
+export function normalizeCategoryItem(item, fileName) {
+  const title = item.title || item.name
+  if (!title) return null
+
+  return {
+    id:
+      item.contentid ||
+      `${fileName}-${title}-${Math.random()}`,
+    title,
+    subtitle: item.addr1 || item.addr2 || item.tel || '',
+    addr: item.addr1 || '',
+    tel: item.tel || '',
+    image: item.firstimage || item.firstimage2 || '',
+    time: item.eventstartdate ? parseKmaTime(item.eventstartdate) : '',
+    color: normalizeCategory(fileName),
+    dateKey:
+      parseEventDate(item.eventstartdate) ||
+      parseEventDate(item.eventenddate) ||
+      null,
   }
 }
 
@@ -105,11 +138,11 @@ export async function loadRegionCategoryItems() {
       }
 
       categoryItems[category] = json.items
-        .map(item => normalizeEventItem(item, fileName))
+        .map(item => normalizeCategoryItem(item, fileName))
         .filter(Boolean)
         .map(normalized => ({
           ...normalized,
-          category
+          category,
         }))
     } catch (error) {
       console.warn('calendarService loadCategoryItems error:', fileName, error)

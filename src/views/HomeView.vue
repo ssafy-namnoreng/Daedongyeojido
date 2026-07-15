@@ -160,7 +160,6 @@ function goToBoard() {
       </div>
     </footer>
 
-    <button class="chatbot-float">💬 AI 가이드</button>
   </div>
 </template>
 
@@ -611,19 +610,6 @@ button:hover {
   padding-top: 18px;
   color: var(--ink-soft);
   font-size: 12.5px;
-}
-
-.chatbot-float {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 2;
-  background: var(--ink);
-  color: var(--paper);
-  border-radius: 999px;
-  padding: 13px 18px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
-  border: 1.4px solid var(--brass);
 }
 
 /* ---------- RESPONSIVE ---------- */
