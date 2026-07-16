@@ -2,12 +2,9 @@ const OPENAI_API_URL = import.meta.env.VITE_OPENAI_API_URL
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-5-mini'
 
-if (!OPENAI_API_URL) {
-  throw new Error('VITE_OPENAI_API_URL이 설정되어 있지 않습니다.')
-}
-if (!OPENAI_API_KEY) {
-  throw new Error('VITE_OPENAI_API_KEY가 설정되어 있지 않습니다.')
-}
+// 주의: 여기서 top-level throw를 하면 env 미설정 시 챗봇뿐 아니라
+// 앱 전체가 로드되지 않는다(App → ChatBotFloating → chatService 체인).
+// 배포 견고성을 위해 실제 호출 시점에만 검증한다.
 
 export function createSystemPrompt() {
   return {
@@ -39,6 +36,13 @@ export function buildChatPayload(userMessage, history = [], context = '') {
 }
 
 export async function requestChatReply(messages) {
+  if (!OPENAI_API_URL || !OPENAI_API_KEY) {
+    throw new Error(
+      'OpenAI 환경변수(VITE_OPENAI_API_URL / VITE_OPENAI_API_KEY)가 설정되어 있지 않습니다. ' +
+      '배포 환경이라면 Netlify Environment Variables에 등록 후 재배포해 주세요.'
+    )
+  }
+
   const body = {
     model: OPENAI_MODEL,
     messages,

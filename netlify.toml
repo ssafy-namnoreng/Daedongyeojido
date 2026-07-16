@@ -1,0 +1,15 @@
+# Netlify 배포 설정
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 8은 Node 20.19+ / 22.12+ 필요
+  NODE_VERSION = "22"
+
+# SPA(History 모드) 라우팅: 모든 경로를 index.html로 폴백해야
+# /board, /calendar 직접 접속·새로고침 시 404가 나지 않음
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
