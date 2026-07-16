@@ -1,33 +1,5 @@
 <template>
-  <button 
-    class="custom-chatbot-btn"
-    @click="$emit('click')"
-    style="
-      /* 1. 레이아웃 & 정렬 (이모지와 텍스트 가로 나열) */
-      display: inline-flex !important;
-      flex-direction: row !important;
-      align-items: center !important;
-      justify-content: center !important;
-      white-space: nowrap !important;
-      gap: 6px !important;
-
-      /* 2. 홈 화면 .chatbot-float 오리지널 규격 완벽 일치 */
-      padding: 13px 18px !important;       /* 홈 화면 패딩 값 */
-      border-radius: 999px !important;     /* 동글동글한 알약 형태 */
-      font-size: 14px !important;          /* 오리지널 폰트 사이즈 */
-      font-weight: 700 !important;
-      cursor: pointer !important;
-
-      /* 3. 홈 화면 CSS 테마 변수의 실제 고정값 주입 (투명화 원천 차단) */
-      background-color: #2c2318 !important; /* var(--ink)의 실제 값 */
-      background: #2c2318 !important;       
-      color: #f2e8d3 !important;            /* var(--paper)의 실제 값 */
-      border: 1.4px solid #a2712c !important; /* var(--brass)의 실제 값 */
-      
-      /* 4. 오리지널 입체 효과 */
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
-    "
-  >
+  <button class="custom-chatbot-btn" @click="$emit('click')">
     <span>💬</span>
     <span>{{ text }}</span>
   </button>
@@ -46,14 +18,31 @@ defineEmits(['click'])
 
 <style scoped>
 .custom-chatbot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
   font-family: inherit;
-  /* 마우스 올렸을 때 부드러운 전환 효과 추가 */
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+
+  padding: 12px 18px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  /* 다른 페이지(홈·게시판·캘린더)와 동일한 지도풍 테마 변수 사용,
+     app-shell 밖에서 쓰일 경우를 대비해 실제 값을 기본값으로 지정 */
+  background: var(--pine, #33553e);
+  color: #f6f0de;
+  border: none;
+  box-shadow: 0 8px 20px rgba(51, 85, 62, 0.24);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* 마우스 올렸을 때 1px 살짝 떠오르는 오리지널 모션 반영 */
 .custom-chatbot-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(51, 85, 62, 0.32);
 }
 </style>
