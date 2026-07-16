@@ -1,8 +1,11 @@
 <!-- filepath: c:\team_project\Daedongyeojido\src\views\HomeView.vue -->
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useBoardStore } from '@/store/board'
 
 const router = useRouter()
+const boardStore = useBoardStore()
 
 function goToBoard() {
   router.push('/board')
@@ -10,6 +13,41 @@ function goToBoard() {
 
 function goToCalendar() {
   router.push('/calendar')
+}
+
+// 캘린더 하단 목록을 특정 카테고리로 열기 (예: 축제/행사 찾아보기)
+function goToCalendarCategory(category) {
+  router.push({ path: '/calendar', query: { category } })
+}
+
+// 최신 게시글 5건 (localStorage 기반) — 기능명세서 3.1
+const recentPosts = computed(() =>
+  [...boardStore.posts]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+)
+
+// 게시판 카테고리(이모지 포함)를 홈 태그 스타일로 매핑
+function tagClass(category) {
+  if (!category) return 'tag-talk'
+  if (category.includes('맛집')) return 'tag-food'
+  if (category.includes('관광')) return 'tag-terrain'
+  if (category.includes('축제')) return 'tag-event'
+  return 'tag-talk'
+}
+
+// '🍲 맛집' → '맛집'
+function tagLabel(category) {
+  if (!category) return '자유'
+  return category.replace(/[^가-힣a-zA-Z]/g, '').trim() || '자유'
+}
+
+function formatShortDate(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${m}.${day}`
 }
 </script>
 
@@ -56,30 +94,30 @@ function goToCalendar() {
           <p>대동여지도 : 대전 동네 여행 지도</p>
 
           <div class="hero-actions">
-            <button class="btn-primary">축제/행사 찾아보기</button>
-            <button class="btn-secondary">일정 등록</button>
+            <button class="btn-primary" @click="goToCalendarCategory('축제/공연/행사')">축제/행사 찾아보기</button>
+            <button class="btn-secondary" @click="goToCalendar">일정 등록</button>
           </div>
         </div>
 
         <div class="legend">
           <p class="legend-title">지도 범례 · LEGEND</p>
           <div class="legend-grid">
-            <div class="legend-card">
+            <button type="button" class="legend-card" @click="goToCalendarCategory('관광지')">
               <span class="legend-mark mark-terrain">⛰</span>
               <span class="legend-name">관광지</span>
-            </div>
-            <div class="legend-card">
+            </button>
+            <button type="button" class="legend-card" @click="goToCalendarCategory('음식점')">
               <span class="legend-mark mark-food">🍲</span>
               <span class="legend-name">맛집</span>
-            </div>
-            <div class="legend-card">
+            </button>
+            <button type="button" class="legend-card" @click="goToCalendarCategory('축제/공연/행사')">
               <span class="legend-mark mark-event">🎪</span>
               <span class="legend-name">축제/행사</span>
-            </div>
-            <div class="legend-card">
+            </button>
+            <button type="button" class="legend-card" @click="goToBoard">
               <span class="legend-mark mark-talk">💬</span>
               <span class="legend-name">자유게시판</span>
-            </div>
+            </button>
           </div>
         </div>
       </section>
@@ -90,69 +128,33 @@ function goToCalendar() {
         </div>
 
         <div class="log-list">
-          <article class="log-entry">
-            <span class="log-tag tag-food">맛집</span>
+          <article
+            v-for="post in recentPosts"
+            :key="post.id"
+            class="log-entry"
+            role="button"
+            tabindex="0"
+            @click="goToBoard"
+            @keyup.enter="goToBoard"
+          >
+            <span class="log-tag" :class="tagClass(post.category)">{{ tagLabel(post.category) }}</span>
             <div class="log-body">
-              <p class="log-title">성심당 대기 줄 안 서는 시간대 공유</p>
-              <p class="log-meta">대전시민A · 07.15</p>
+              <p class="log-title">{{ post.title }}</p>
+              <p class="log-meta">{{ post.author }} · {{ formatShortDate(post.createdAt) }}</p>
             </div>
             <div class="log-stats">
-              <span>조회 142</span>
-              <span>추천 32</span>
+              <span>조회 {{ post.views }}</span>
+              <span>추천 {{ post.likes }}</span>
             </div>
           </article>
 
-          <article class="log-entry">
-            <span class="log-tag tag-terrain">관광</span>
-            <div class="log-body">
-              <p class="log-title">가을 계족산 황톳길 맨발 코스 후기</p>
-              <p class="log-meta">로컬가이드 · 07.14</p>
-            </div>
-            <div class="log-stats">
-              <span>조회 98</span>
-              <span>추천 15</span>
-            </div>
-          </article>
-
-          <article class="log-entry">
-            <span class="log-tag tag-talk">자유</span>
-            <div class="log-body">
-              <p class="log-title">유성온천 근처 조용하고 힙한 카페 추천좀</p>
-              <p class="log-meta">빵돌이 · 07.14</p>
-            </div>
-            <div class="log-stats">
-              <span>조회 54</span>
-              <span>추천 4</span>
-            </div>
-          </article>
-
-          <article class="log-entry">
-            <span class="log-tag tag-event">축제</span>
-            <div class="log-body">
-              <p class="log-title">이번 주말 엑스포 음악분수 시간표 정보</p>
-              <p class="log-meta">꿈돌이 · 07.13</p>
-            </div>
-            <div class="log-stats">
-              <span>조회 210</span>
-              <span>추천 45</span>
-            </div>
-          </article>
-
-          <article class="log-entry">
-            <span class="log-tag tag-food">맛집</span>
-            <div class="log-body">
-              <p class="log-title">칼국수 골목 진짜 원조 숨은 노포 찾음</p>
-              <p class="log-meta">밀가루매니아 · 07.12</p>
-            </div>
-            <div class="log-stats">
-              <span>조회 120</span>
-              <span>추천 28</span>
-            </div>
-          </article>
+          <div v-if="recentPosts.length === 0" class="log-empty">
+            아직 등록된 동네 소식이 없습니다. 첫 소식을 남겨보세요!
+          </div>
         </div>
 
         <div class="news-more">
-          <a href="#">동네 소식 더 보기 &gt;</a>
+          <a href="#" @click.prevent="goToBoard">동네 소식 더 보기 &gt;</a>
         </div>
       </section>
     </main>
@@ -463,7 +465,7 @@ button:hover {
   border: 1px solid rgba(44, 35, 24, 0.16);
   border-radius: 4px;
   padding: 16px 8px;
-  cursor: default;
+  cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
 
@@ -535,6 +537,7 @@ button:hover {
   padding: 16px 22px;
   border-bottom: 1px dashed rgba(44, 35, 24, 0.16);
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .log-entry:last-child {
@@ -580,6 +583,13 @@ button:hover {
   color: var(--ink-soft);
   font-weight: 600;
   white-space: nowrap;
+}
+
+.log-empty {
+  padding: 28px 22px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-soft);
 }
 
 .news-more {

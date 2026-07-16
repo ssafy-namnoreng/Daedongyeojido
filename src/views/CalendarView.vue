@@ -146,7 +146,7 @@
       </div>
     </div>
 
-    <div class="mt-8 bg-[#f8f1de] p-4 rounded-md border border-[#e0cfaa]">
+    <div ref="categorySectionRef" class="mt-8 bg-[#f8f1de] p-4 rounded-md border border-[#e0cfaa]">
       <div class="flex flex-wrap gap-2 mb-4">
         <button
           v-for="tab in categoryTabs"
@@ -276,8 +276,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import '@/assets/css/calendar.css'
 import defaultImage from '@/assets/images/dadong.png'
 import {
@@ -291,6 +291,8 @@ import {
 import { loadRegionCategoryItems } from '@/services/calendarService'
 
 const router = useRouter()
+const route = useRoute()
+const categorySectionRef = ref(null)
 
 function goToHome() {
   router.push('/')
@@ -548,6 +550,16 @@ onMounted(async () => {
     await initCalendarStore()
   }
   await loadCategoryLists()
+
+  // 홈에서 카테고리를 지정해 넘어온 경우(예: ?category=축제/공연/행사) 해당 목록을 열고 스크롤
+  const requested = route.query.category
+  if (requested && categoryTabs.includes(requested)) {
+    selectedCategory.value = requested
+    currentCategoryPage.value = 1
+    searchKeyword.value = ''
+    await nextTick()
+    categorySectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 })
 </script>
 
