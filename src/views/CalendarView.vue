@@ -154,12 +154,30 @@
         </button>
       </div>
 
-      <div class="text-sm text-[#4F6B50] mb-4">
-        <strong class="text-[#2B3F2F]">{{ selectedCategory }}</strong> 카테고리 목록
+      <div class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input
+          v-model="searchKeyword"
+          type="text"
+          :placeholder="`${selectedCategory} 검색 (이름 · 주소)`"
+          class="flex-1 px-3 py-2 border rounded-lg border-[#C5D9C0] bg-white text-[#2B3F2F]"
+        />
+        <button
+          v-if="searchKeyword"
+          @click="searchKeyword = ''"
+          class="px-4 py-2 rounded-lg border border-[#C5D9C0] bg-white text-[#2B3F2F] hover:bg-[#EDF7EF]"
+        >
+          초기화
+        </button>
       </div>
 
-      <div v-if="currentCategoryItems.length === 0" class="text-[#6D7E64] text-center py-12">
-        선택된 카테고리의 데이터가 없습니다.
+      <div class="text-sm text-[#4F6B50] mb-4">
+        <strong class="text-[#2B3F2F]">{{ selectedCategory }}</strong> 카테고리
+        · 총 <strong class="text-[#2B3F2F]">{{ filteredCategoryItems.length }}</strong>건
+        <span v-if="searchKeyword"> ("{{ searchKeyword }}" 검색 결과)</span>
+      </div>
+
+      <div v-if="filteredCategoryItems.length === 0" class="text-[#6D7E64] text-center py-12">
+        {{ searchKeyword ? '검색 결과가 없습니다.' : '선택된 카테고리의 데이터가 없습니다.' }}
       </div>
 
       <div class="grid gap-3">
@@ -246,7 +264,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import '@/assets/css/calendar.css'
 import defaultImage from '@/assets/images/dadong.png'
@@ -295,6 +313,7 @@ const categoryTabs = [
 const selectedCategory = ref('관광지')
 const categoryItems = ref({})
 const currentCategoryPage = ref(1)
+const searchKeyword = ref('')
 const pageSize = 10
 const pendingAddItemId = ref(null)
 const pendingAddDate = ref('')
@@ -375,13 +394,31 @@ const currentCategoryItems = computed(() =>
   categoryItems.value[selectedCategory.value] || []
 )
 
+// 검색어(이름·주소·전화)로 현재 카테고리 항목 필터링
+const filteredCategoryItems = computed(() => {
+  const kw = searchKeyword.value.trim().toLowerCase()
+  if (!kw) return currentCategoryItems.value
+
+  return currentCategoryItems.value.filter((item) =>
+    [item.title, item.subtitle, item.addr, item.tel]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(kw))
+  )
+})
+
 const totalCategoryPages = computed(() => {
-  return Math.max(1, Math.ceil(currentCategoryItems.value.length / pageSize))
+  return Math.max(1, Math.ceil(filteredCategoryItems.value.length / pageSize))
 })
 
 const pagedCategoryItems = computed(() => {
   const start = (currentCategoryPage.value - 1) * pageSize
-  return currentCategoryItems.value.slice(start, start + pageSize)
+  return filteredCategoryItems.value.slice(start, start + pageSize)
+})
+
+// 검색어가 바뀌면 첫 페이지로 되돌리고 추가 대기 상태 정리
+watch(searchKeyword, () => {
+  currentCategoryPage.value = 1
+  cancelPendingAdd()
 })
 
 async function loadCategoryLists() {
@@ -395,6 +432,7 @@ function moveCalendar(direction) {
 function selectCategory(tab) {
   selectedCategory.value = tab
   currentCategoryPage.value = 1
+  searchKeyword.value = ''
   cancelPendingAdd()
 }
 
