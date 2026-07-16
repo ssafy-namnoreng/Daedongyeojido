@@ -1,109 +1,88 @@
-# localhub
+# 대동여지도 (LocalHub)
 
-대전·충청 여행 허브 Vue SPA 프로젝트
+공공데이터 기반 **대전·충청 지역 정보 공유 커뮤니티** — 백엔드 없이 브라우저에서 동작하는 Vue 3 정적 SPA.
 
-## 프로젝트 개요
+배포: https://ai-onboarding-team.netlify.app/
 
-- Vue 3 + Vite 기반 SPA
-- 지역 관광 데이터, 게시판, 일정 관리, 챗봇 UI 구성 예정
-- Netlify 배포 대상
+## 주요 기능
+
+- **홈** — 대전 지도(Leaflet)에 관광지·맛집·축제 등 장소를 카테고리 이모지 마커로 표시(클러스터링), 최신 게시글 요약, 카테고리 바로가기
+- **커뮤니티 게시판** — 회원가입/로그인 없는 익명 게시판. 목록·상세·작성·수정·삭제(CRUD), 제목+내용 검색, 카테고리 필터, 페이지네이션
+  - 게시글은 브라우저 `localStorage`에 저장
+  - 수정·삭제는 작성 시 지정한 **숫자 4자리 비밀번호**로 확인 (서버가 없어 평문 저장·비교하는 교육용 설계)
+- **일정 캘린더** — 공공데이터의 축제/행사를 **실제 개최일(시작~종료일)** 기준으로 달력에 표시, 개인 일정 메모(localStorage), 하단 카테고리 목록 검색 및 "캘린더에 추가"
+- **AI 챗봇** — OpenAI API를 프론트에서 직접 호출. 사이트가 보유한 지역 데이터를 컨텍스트로 주입해 응답, 대화 히스토리 유지, 모바일 전체화면 대응
+
+## 기술 스택
+
+- Vue 3 (`<script setup>`) + Vite
+- Vue Router (History 모드 SPA)
+- Pinia (게시판 상태 관리)
+- Tailwind CSS + 커스텀 스코프 스타일
+- Leaflet + leaflet.markercluster (지도, OpenStreetMap 타일 — API 키 불필요)
+- OpenAI API (챗봇)
 
 ## 요구 환경
 
-- Node.js 18 이상 권장
-- `npm` 사용
-- Git 저장소 클론 후 작업
+- Node.js **20.19+** (Vite 8 요구 사항)
+- npm
 
-## 설치
+## 설치 및 실행
 
 ```bash
-cd /c/NAM/day03/project
 npm install
+npm run dev      # 개발 서버 (http://localhost:5173)
+npm run build    # 프로덕션 빌드 → dist/
+npm run preview  # 빌드 결과 로컬 미리보기
 ```
-
-## 로컬 개발 서버 실행
-
-```bash
-npm run dev
-```
-
-- 실행 후 브라우저에서 `http://localhost:5173` 접속
-- 코드 수정 시 자동 HMR 적용
-
-## 빌드
-
-```bash
-npm run build
-```
-
-- `dist/` 폴더 생성
-
-## 로컬 빌드 미리보기
-
-```bash
-npm run preview
-```
-
-- 빌드 결과를 로컬 서버로 확인
 
 ## 환경 변수
 
-- 민감한 키는 `.env.local`에 저장
-- `.env.local`은 `.gitignore`에 등록되어 Git에 커밋되지 않음
-
-예시:
+챗봇용 OpenAI 키는 `.env.local`에 저장하며, `.gitignore`에 등록되어 저장소에 커밋되지 않는다.
 
 ```env
 VITE_OPENAI_API_KEY=your_openai_api_key_here
+VITE_OPENAI_API_URL=https://api.openai.com/v1/chat/completions
+VITE_OPENAI_MODEL=gpt-5-mini
 ```
+
+> ⚠️ `VITE_` 접두사 값은 빌드 결과물(브라우저 번들)에 인라인되어 노출된다. 반드시 **사용량·결제 한도를 낮춘 전용 키**만 사용할 것. 환경 변수가 없어도 앱은 정상 동작하며 챗봇만 비활성화된다.
+
+## 데이터
+
+`public/data/대전_충청권/` 아래 8개 카테고리 JSON(한국관광공사 대전/충청 공공데이터)을 프론트엔드에서 `fetch`로 로드한다.
+
+- 관광지 · 레포츠 · 문화시설 · 쇼핑 · 숙박 · 여행코스 · 음식점 · 축제/공연/행사
 
 ## Netlify 배포
 
-1. GitHub / GitLab 저장소 연결
-2. Netlify에서 사이트 생성
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. 환경 변수 등록
-   - `VITE_OPENAI_API_KEY`
+배포 설정은 `netlify.toml`에 포함되어 있어, Netlify 대시보드에서는 **환경 변수만** 등록하면 된다.
 
-### SPA 리다이렉트 설정
+- Build command: `npm run build`
+- Publish directory: `dist`
+- SPA 폴백 리다이렉트(`/* → /index.html 200`) 및 Node 버전 고정 포함
+- Netlify **Environment variables**에 `VITE_OPENAI_API_KEY` / `VITE_OPENAI_API_URL` / `VITE_OPENAI_MODEL` 등록 후 재배포
 
-`public/_redirects` 파일을 생성하고 아래 내용을 추가하면 `history` 모드 라우터에서 새로고침도 정상 동작합니다.
+> VITE_ 키는 번들에 포함되므로, Netlify의 기본 secrets scanning이 빌드를 막을 경우 `netlify.toml`에서 해당 키를 스캔 예외로 지정한다.
 
-```text
-/* /index.html 200
+## 프로젝트 구조
+
+```
+public/data/대전_충청권/   지역 공공데이터(JSON)
+src/
+  main.js                  진입점 (Vue · Router · Pinia 마운트)
+  App.vue                  루트 (router-view + 전역 챗봇)
+  router/index.js          라우팅 (/ · /board · /calendar)
+  views/                   HomeView · BoardListView · CalendarView
+  components/
+    common/                AppHeader · AppFooter
+    chatbot/               ChatBotFloating
+    map/                   RegionMap (Leaflet 지도)
+    MyButton.vue           공용 버튼(챗봇 토글 등)
+  store/                   board.js · calendar.js (Pinia / localStorage)
+  services/                chatService.js(OpenAI) · calendarService.js(데이터 로딩)
 ```
 
 ## Git 관리
 
-- 포함
-  - `package.json`
-  - `package-lock.json`
-  - `src/`
-  - `public/`
-- 제외
-  - `node_modules/`
-  - `dist/`
-  - `.env.local`
-  - `.vscode/`
-  - `*.log`
-
-## 파일 구조 요약
-
-| 경로 | 설명 |
-| --- | --- |
-| `src/main.js` | 애플리케이션 진입점 |
-| `src/App.vue` | 공통 레이아웃 |
-| `src/router/index.js` | 라우터 설정 |
-| `src/views/` | 페이지 컴포넌트 |
-| `src/components/` | 재사용 UI 컴포넌트 |
-| `src/store/` | 상태 관리 |
-| `src/services/` | OpenAI / API 호출 로직 |
-| `public/data/` | 로컬 데이터 파일 |
-
-## 실행 순서
-
-1. 의존성 설치: `npm install`
-2. 개발 서버 실행: `npm run dev`
-3. 화면 확인: `http://localhost:5173`
-4. 배포 준비: `npm run build`
+- 커밋 제외: `node_modules/`, `dist/`, `.env.local`
