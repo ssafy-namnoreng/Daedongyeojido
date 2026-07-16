@@ -207,8 +207,11 @@
                 <div class="text-sm text-[#6b5b45] mt-1">
                   {{ item.subtitle || item.addr || item.tel || '세부 정보 없음' }}
                 </div>
-                <div v-if="item.dateKey" class="text-xs text-[#6b5b45] mt-2">
-                    {{ item.dateKey }}
+                <div v-if="item.startDate" class="text-xs text-[#6b5b45] mt-2">
+                  📅 {{ item.startDate }}<template v-if="item.endDate && item.endDate !== item.startDate"> ~ {{ item.endDate }}</template>
+                </div>
+                <div v-if="item.startTime" class="text-xs text-[#6b5b45] mt-1">
+                  🕒 {{ item.startTime }}<template v-if="item.endTime"> ~ {{ item.endTime }}</template>
                 </div>
               </div>
             </div>
