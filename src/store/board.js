@@ -7,6 +7,11 @@ const CATEGORY_COLORS = {
   '⛰️ 관광': '#33553E',
   '🍲 맛집': '#A63C26',
   '🎪 축제': '#A2712C',
+  '🚴 레포츠': '#2E7D6B',
+  '🏛️ 문화시설': '#7C5A9B',
+  '🛍️ 쇼핑': '#C25E7A',
+  '🏨 숙박': '#3E6B8C',
+  '🧭 여행코스': '#6B8E23',
   '💬 자유': '#6B5B45'
 }
 
@@ -14,6 +19,11 @@ const CATEGORIES = [
   { filterName: '⛰️ 관광', name: '관광지', emoji: '⛰️' },
   { filterName: '🍲 맛집', name: '맛집', emoji: '🍲' },
   { filterName: '🎪 축제', name: '축제/행사', emoji: '🎪' },
+  { filterName: '🚴 레포츠', name: '레포츠', emoji: '🚴' },
+  { filterName: '🏛️ 문화시설', name: '문화시설', emoji: '🏛️' },
+  { filterName: '🛍️ 쇼핑', name: '쇼핑', emoji: '🛍️' },
+  { filterName: '🏨 숙박', name: '숙박', emoji: '🏨' },
+  { filterName: '🧭 여행코스', name: '여행코스', emoji: '🧭' },
   { filterName: '💬 자유', name: '자유게시판', emoji: '💬' }
 ]
 
