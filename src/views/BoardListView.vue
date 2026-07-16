@@ -563,7 +563,7 @@ function goToCalendar() {
 
 :global(body) {
   margin: 0;
-  background: linear-gradient(135deg, #fcf7e8 0%, #f7efe0 50%, #f2efdf 100%);
+  background: #f2e8d3;
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
 }
 
@@ -572,7 +572,7 @@ function goToCalendar() {
 }
 
 .app-shell {
-  /* HomeView와 동일한 컬러 테마 변수 이식 */
+  /* HomeView와 동일한 컬러 테마 변수 */
   --paper: #f2e8d3;
   --paper-deep: #e8dab5;
   --ink: #2c2318;
@@ -584,9 +584,11 @@ function goToCalendar() {
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #fcf7e8 0%, #f7efe0 50%, #f2efdf 100%);
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(166, 60, 38, 0.05), transparent 55%),
+    radial-gradient(ellipse at 85% 100%, rgba(51, 85, 62, 0.06), transparent 55%),
+    var(--paper);
   color: var(--ink);
-  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
 }
 
 .contour-bg {
@@ -596,14 +598,13 @@ function goToCalendar() {
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.9;
 }
 
 .contour {
   fill: none;
-  stroke: rgba(118, 99, 60, 0.16);
-  stroke-width: 2;
-  stroke-linecap: round;
+  stroke: var(--brass);
+  stroke-width: 1;
+  opacity: 0.16;
 }
 
 .topbar,
@@ -702,6 +703,8 @@ function goToCalendar() {
   width: 100%;
 }
 
+/* ---------- INTRO ---------- */
+
 .intro-section {
   max-width: 1200px;
   margin: 0 auto;
@@ -710,35 +713,36 @@ function goToCalendar() {
 
 .intro-copy {
   padding-left: 18px;
-  border-left: 4px solid #6d7b34;
+  border-left: 3px solid var(--pine);
 }
 
 .eyebrow {
   display: inline-block;
-  color: #a14c2f;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.18em;
-  border: 1px solid rgba(161, 76, 47, 0.3);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--route);
+  border: 1px solid rgba(166, 60, 38, 0.4);
   border-radius: 999px;
-  padding: 4px 8px;
-  margin-bottom: 8px;
+  padding: 4px 12px;
+  margin-bottom: 10px;
 }
 
 .intro-copy h2 {
   margin: 0 0 8px;
-  font-size: 42px;
-  font-weight: 900;
-  line-height: 1.15;
   font-family: 'Noto Serif KR', serif;
-  color: #2d241c;
-  letter-spacing: -0.02em;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .intro-copy p {
   margin: 0;
   font-size: 15px;
-  color: #6f5f47;
+  color: var(--ink-soft);
   line-height: 1.75;
 }
 
@@ -748,54 +752,79 @@ function goToCalendar() {
   padding: 12px 24px 60px;
 }
 
+/* ---------- CONTENT CARD ---------- */
+
 .content-card {
-  background: linear-gradient(135deg, #fcf4e6 0%, #f7ebda 100%);
-  border: 1px solid #d9c7a5;
-  border-radius: 28px;
-  padding: 24px;
-  box-shadow: 0 16px 40px rgba(95, 75, 47, 0.08);
+  position: relative;
+  background: linear-gradient(160deg, #f8f1de 0%, #efe1bf 100%);
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  border-radius: 6px;
+  padding: 28px;
+  box-shadow: 0 18px 40px rgba(44, 35, 24, 0.1);
+}
+
+.content-card::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(162, 113, 44, 0.25);
+  border-radius: 3px;
+  pointer-events: none;
 }
 
 .filter-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .chip {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #d8c4a1;
-  background: #f8edd9;
-  color: #3f3427;
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  background: rgba(248, 241, 224, 0.7);
+  color: var(--ink-soft);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-family: inherit;
   cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--brass);
+  transform: translateY(-1px);
 }
 
 .chip.active {
-  background: linear-gradient(135deg, #6d7b34, #4d5f25);
-  color: #f8f1e2;
-  border-color: #4d5f25;
+  background: var(--pine);
+  color: #f6f0de;
+  border-color: var(--pine);
 }
 
 .toolbar {
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .search-box {
   flex: 1;
+  min-width: 220px;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fffdf8;
-  border: 1px solid #e0cfaa;
-  border-radius: 12px;
+  background: rgba(248, 241, 224, 0.7);
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  border-radius: 4px;
   padding: 10px 12px;
 }
 
@@ -805,13 +834,14 @@ function goToCalendar() {
 .form-grid select,
 .form-grid textarea,
 .modal-card input {
-  border: 1px solid #e0cfaa;
-  border-radius: 12px;
-  background: #fffdf8;
-  color: #3f3427;
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  border-radius: 4px;
+  background: rgba(248, 241, 224, 0.7);
+  color: var(--ink);
   padding: 10px 12px;
   outline: none;
   font-size: 13px;
+  font-family: inherit;
 }
 
 .search-box input {
@@ -828,24 +858,36 @@ function goToCalendar() {
 
 .toolbar select {
   min-width: 110px;
+  cursor: pointer;
 }
 
 .write-btn {
-  background: linear-gradient(135deg, #a8672c, #8a5722);
-  color: #fff8ee;
-  padding: 10px 14px;
-  box-shadow: 0 8px 16px rgba(168, 103, 44, 0.2);
   border: none;
   cursor: pointer;
-  border-radius: 999px;
   font-weight: 700;
+  font-family: inherit;
+  border-radius: 4px;
+  padding: 11px 18px;
+  font-size: 14px;
+  background: var(--pine);
+  color: #f6f0de;
+  box-shadow: 0 8px 18px rgba(51, 85, 62, 0.28);
+  transition: transform 0.15s ease;
 }
 
+.write-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------- TABLE ---------- */
+
 .table-wrap {
+  position: relative;
+  z-index: 1;
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid #e8d9c0;
-  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  border: 1px solid rgba(44, 35, 24, 0.15);
+  background: rgba(248, 241, 224, 0.6);
 }
 
 table {
@@ -856,36 +898,42 @@ table {
 th,
 td {
   padding: 14px 16px;
-  border-bottom: 1px solid #efe3d0;
+  border-bottom: 1px dashed rgba(44, 35, 24, 0.16);
   text-align: left;
   font-size: 13px;
 }
 
 th {
-  background: #f7ecdb;
-  color: #6c5741;
+  background: var(--paper-deep);
+  color: var(--ink-soft);
   font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 tbody tr {
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 tbody tr:hover {
-  background: #f9f0e1;
+  background: rgba(162, 113, 44, 0.07);
 }
 
 .title-cell {
   font-weight: 700;
-  color: #2d241c;
+  color: var(--ink);
 }
 
 .post-tag {
   display: inline-block;
   color: #fff;
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: 3px;
   font-size: 11px;
   font-weight: 700;
 }
@@ -893,10 +941,12 @@ tbody tr:hover {
 .empty-state {
   text-align: center;
   padding: 32px 12px;
-  color: #6f5f47;
+  color: var(--ink-soft);
 }
 
 .pagination {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   gap: 8px;
@@ -907,39 +957,51 @@ tbody tr:hover {
 .page-btn {
   width: 34px;
   height: 34px;
-  border: 1px solid #d8c4a1;
-  background: #fffdf8;
-  border-radius: 10px;
-  color: #3f3427;
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  background: rgba(248, 241, 224, 0.7);
+  border-radius: 4px;
+  color: var(--ink);
   font-weight: 700;
   cursor: pointer;
 }
 
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .pagination button.active,
 .page-btn.active {
-  background: linear-gradient(135deg, #6d7b34, #4d5f25);
-  color: white;
-  border-color: #4d5f25;
+  background: var(--pine);
+  color: #f6f0de;
+  border-color: var(--pine);
 }
+
+/* ---------- FOOTER ---------- */
 
 .footer {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px 40px;
-  color: #7a694f;
-  font-size: 14px;
+  margin: 24px auto 0;
+  padding: 18px 24px 40px;
+  border-top: 1px solid rgba(44, 35, 24, 0.2);
+  color: var(--ink-soft);
+  font-size: 13px;
 }
 
 .footer h4 {
-  margin: 0;
-  color: #2f2922;
+  margin: 0 0 4px;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  color: var(--ink);
 }
 
+/* ---------- CHATBOT ---------- */
+
 .chatbot-float {
-  position: fixed;   /* 화면에 고정 */
-  bottom: 20px;      /* 아래에서 20px 띄우기 */
-  right: 20px;       /* 우측에서 20px 띄우기 */
-  z-index: 999;      /* 다른 화면 요소보다 위에 뜨도록 설정 */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -949,11 +1011,11 @@ tbody tr:hover {
 .chat-panel {
   width: 340px;
   height: 480px;
-  background: #fcf3e4;
-  border: 2px solid #a8672c;
-  border-radius: 24px;
+  background: var(--paper);
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 16px 40px rgba(44, 35, 24, 0.16);
 }
 
 .chat-header {
@@ -961,25 +1023,26 @@ tbody tr:hover {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #6d7b34, #4d5f25);
-  color: #fff;
+  background: var(--pine);
+  color: #f6f0de;
 }
 
 .chat-header h4 {
   margin: 0 0 2px;
+  font-family: 'Noto Serif KR', serif;
   font-size: 14px;
 }
 
 .chat-header p {
   margin: 0;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(246, 240, 222, 0.8);
 }
 
 .chat-header button {
   background: transparent;
   border: none;
-  color: #fff;
+  color: #f6f0de;
   font-size: 20px;
   cursor: pointer;
 }
@@ -988,13 +1051,13 @@ tbody tr:hover {
   height: 340px;
   padding: 14px;
   overflow-y: auto;
-  background: rgba(248, 237, 217, 0.5);
+  background: rgba(248, 241, 224, 0.5);
 }
 
 .bubble {
   max-width: 85%;
   padding: 10px 12px;
-  border-radius: 16px;
+  border-radius: 4px;
   font-size: 12px;
   margin-bottom: 8px;
   line-height: 1.5;
@@ -1002,19 +1065,20 @@ tbody tr:hover {
 
 .bubble.user {
   margin-left: auto;
-  background: #6d7b34;
-  color: #f8f1e2;
+  background: var(--pine);
+  color: #f6f0de;
 }
 
 .bubble.bot {
-  background: #fffdf8;
-  color: #2d241c;
-  border: 1px solid #e8d9c0;
+  background: rgba(248, 241, 224, 0.9);
+  color: var(--ink);
+  border: 1px solid rgba(44, 35, 24, 0.15);
 }
 
 .typing {
   display: flex;
   gap: 4px;
+  color: var(--ink-soft);
 }
 
 .typing span {
@@ -1030,37 +1094,43 @@ tbody tr:hover {
   display: flex;
   gap: 8px;
   padding: 12px;
-  background: #fcf3e4;
-  border-top: 1px solid #e8d9c0;
+  background: var(--paper);
+  border-top: 1px solid rgba(44, 35, 24, 0.15);
 }
 
 .chat-input-row input {
   flex: 1;
-  border: 1px solid #e0cfaa;
-  border-radius: 12px;
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  border-radius: 4px;
   padding: 9px 10px;
-  background: #fffdf8;
+  background: rgba(248, 241, 224, 0.7);
+  color: var(--ink);
+  outline: none;
+  font-family: inherit;
 }
 
 .chat-input-row button {
-  background: #6d7b34;
-  color: white;
-  padding: 9px 12px;
+  background: var(--pine);
+  color: #f6f0de;
+  padding: 9px 14px;
   border: none;
-  border-radius: 999px;
+  border-radius: 4px;
   cursor: pointer;
+  font-weight: 700;
 }
 
 .chat-toggle {
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #6d7b34, #4d5f25);
-  color: white;
+  padding: 12px 18px;
+  border-radius: 4px;
+  background: var(--pine);
+  color: #f6f0de;
   font-weight: 700;
   border: none;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 8px 20px rgba(51, 85, 62, 0.24);
 }
+
+/* ---------- MODAL ---------- */
 
 .modal-overlay {
   position: fixed;
@@ -1078,11 +1148,11 @@ tbody tr:hover {
   width: min(720px, 100%);
   max-height: 85vh;
   overflow-y: auto;
-  border-radius: 24px;
-  background: #fcf3e4;
-  border: 2px solid #a8672c;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
-  padding: 24px;
+  border-radius: 6px;
+  background: var(--paper);
+  border: 1px solid rgba(44, 35, 24, 0.18);
+  box-shadow: 0 16px 40px rgba(44, 35, 24, 0.16);
+  padding: 28px;
 }
 
 .modal-card.compact {
@@ -1094,20 +1164,23 @@ tbody tr:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed rgba(44, 35, 24, 0.16);
 }
 
 .modal-head h3 {
   margin: 0;
-  font-size: 20px;
-  color: #2d241c;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 19px;
+  color: var(--ink);
 }
 
 .modal-head button {
   border: none;
   background: transparent;
-  font-size: 24px;
+  font-size: 22px;
   cursor: pointer;
-  color: #6c5741;
+  color: var(--ink-soft);
 }
 
 .meta {
@@ -1115,12 +1188,12 @@ tbody tr:hover {
   flex-wrap: wrap;
   gap: 12px;
   font-size: 12px;
-  color: #6c5741;
+  color: var(--ink-soft);
   margin-bottom: 14px;
 }
 
 .modal-content {
-  color: #2d241c;
+  color: var(--ink);
   line-height: 1.75;
   white-space: pre-wrap;
 }
@@ -1133,13 +1206,20 @@ tbody tr:hover {
 }
 
 .secondary-btn {
-  border: 1px solid #e0cfaa;
-  background: #fffdf8;
-  color: #3f3427;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-weight: 700;
+  border: 1.4px solid var(--ink);
   cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--ink);
+  transition: transform 0.15s ease;
+}
+
+.secondary-btn:hover {
+  transform: translateY(-1px);
 }
 
 .form-grid {
@@ -1153,7 +1233,7 @@ tbody tr:hover {
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #2d241c;
+  color: var(--ink);
 }
 
 .form-grid .full {
@@ -1171,19 +1251,52 @@ tbody tr:hover {
   top: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #2d241c;
-  color: #f8f1e2;
-  padding: 10px 16px;
-  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 18px;
+  border-radius: 4px;
   z-index: 80;
   font-size: 13px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .error {
-  color: #a14c2f;
+  color: var(--route);
   font-size: 12px;
   font-weight: 700;
   margin-top: 6px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 860px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-actions {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav-links {
+    display: none;
+  }
+
+  .intro-copy h2 {
+    font-size: 27px;
+  }
+
+  .content-card {
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
 </style>
