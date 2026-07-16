@@ -91,6 +91,10 @@ export function normalizeCategoryItem(item, fileName) {
 
   const { startTime, endTime } = parsePlaytime(item.playtime)
 
+  // mapy=위도(lat), mapx=경도(lng)
+  const lat = parseFloat(item.mapy)
+  const lng = parseFloat(item.mapx)
+
   return {
     id:
       item.contentid ||
@@ -100,6 +104,8 @@ export function normalizeCategoryItem(item, fileName) {
     addr: item.addr1 || '',
     tel: item.tel || '',
     image: item.firstimage || item.firstimage2 || '',
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
     time: item.eventstartdate ? parseKmaTime(item.eventstartdate) : '',
     color: normalizeCategory(fileName),
     dateKey:

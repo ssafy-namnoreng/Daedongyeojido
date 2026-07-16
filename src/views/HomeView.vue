@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBoardStore } from '@/store/board'
 import AppFooter from '@/components/common/AppFooter.vue'
+import RegionMap from '@/components/map/RegionMap.vue'
 
 const router = useRouter()
 const boardStore = useBoardStore()
@@ -121,6 +122,13 @@ function formatShortDate(iso) {
             </button>
           </div>
         </div>
+      </section>
+
+      <section class="map-section">
+        <div class="news-title-row">
+          <h3>동네 지도 <span>대전/충청 권역을 지도에서 살펴보세요</span></h3>
+        </div>
+        <RegionMap />
       </section>
 
       <section class="news-section">
@@ -494,6 +502,10 @@ button:hover {
 }
 
 /* ---------- NEWS / LOG ---------- */
+
+.map-section {
+  margin-top: 40px;
+}
 
 .news-section {
   margin-top: 40px;
