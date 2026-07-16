@@ -3,6 +3,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBoardStore } from '@/store/board'
+import AppFooter from '@/components/common/AppFooter.vue'
 
 const router = useRouter()
 const boardStore = useBoardStore()
@@ -159,12 +160,7 @@ function formatShortDate(iso) {
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="footer-frame">
-        <p>대동여지도 서비스 소개 · 지역 탐험의 새로운 기준</p>
-        <span>© 2026 Daedongyeojido</span>
-      </div>
-    </footer>
+    <AppFooter />
 
   </div>
 </template>

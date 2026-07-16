@@ -133,12 +133,7 @@
       </section>
     </main>
 
-    <footer class="footer">
-      <div>
-        <h4>🗺️ 대동여지도</h4>
-        <p>대전 동네 로컬 제보와 여행 정보를 함께 나누는 따뜻한 커뮤니티입니다.</p>
-      </div>
-    </footer>
+    <AppFooter />
 
     <div v-if="selectedPost" class="modal-overlay" @click.self="selectedPost = null">
       <div class="modal-card">
@@ -269,6 +264,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useBoardStore } from '@/store/board'
+import AppFooter from '@/components/common/AppFooter.vue'
 
 const router = useRouter()
 const store = useBoardStore()
