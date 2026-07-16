@@ -272,12 +272,15 @@
       </div>
     </div>
   </section>
+
+  <AppFooter />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import AppFooter from '@/components/common/AppFooter.vue'
 import '@/assets/css/calendar.css'
 import defaultImage from '@/assets/images/dadong.png'
 import {

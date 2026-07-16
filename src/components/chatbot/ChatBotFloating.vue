@@ -1,6 +1,6 @@
 <template>
-  <div class="chatbot-float">
-    <MyButton text="AI 가이드" @click="open = true" />
+  <div class="chatbot-float" :class="{ 'is-open': open }">
+    <MyButton class="chat-toggle-btn" text="AI 가이드" @click="open = true" />
 
     <div v-if="open" class="chat-panel">
       <div class="chat-header">
@@ -316,5 +316,27 @@ const send = async () => {
 .chat-input-row button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* 모바일: 챗봇이 열리면 대화창을 전체 화면으로 */
+@media (max-width: 480px) {
+  .chatbot-float.is-open {
+    inset: 0;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  /* 전체화면일 땐 플로팅 'AI 가이드' 버튼 숨김 */
+  .chatbot-float.is-open .chat-toggle-btn {
+    display: none;
+  }
+
+  .chatbot-float.is-open .chat-panel {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border: none;
+    border-radius: 0;
+  }
 }
 </style>
