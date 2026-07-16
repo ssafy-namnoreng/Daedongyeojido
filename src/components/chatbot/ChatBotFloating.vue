@@ -1,80 +1,192 @@
 <template>
   <div class="chatbot-float">
-    <MyButton text="AI 가이드" @click="isChatOpen = true" />
-    
-    <div v-if="isChatOpen" class="chat-panel">
+    <MyButton text="AI 가이드" @click="open = true" />
+
+    <div v-if="open" class="chat-panel">
       <div class="chat-header">
         <div>
           <h4>대동여지도 AI 도우미</h4>
           <p>대전 로컬 전문 가이드 봇</p>
         </div>
-        <button @click="isChatOpen = false">×</button>
+        <button @click="open = false">×</button>
       </div>
 
       <div class="chat-body" ref="scrollRef">
-        <div 
-          v-for="(msg, idx) in chatMessages" 
-          :key="idx" 
-          :class="['bubble', msg.role]"
+        <div
+          v-for="(msg, idx) in messages"
+          :key="idx"
+          :class="['bubble', msg.role === 'user' ? 'user' : 'bot']"
         >
           {{ msg.content }}
         </div>
-        <div v-if="isChatTyping" class="bubble bot typing">
+
+        <div v-if="isLoading" class="bubble bot typing">
           <div class="loading-dots">
             <span>●</span><span>●</span><span>●</span>
           </div>
         </div>
+
+        <p v-if="errorMessage" class="chat-error">{{ errorMessage }}</p>
       </div>
 
       <div class="chat-input-row">
-        <input 
-          v-model="userQuery" 
-          type="text" 
-          placeholder="메시지를 입력해 주세요..." 
-          @keyup.enter="sendChatMessage"
+        <input
+          v-model="message"
+          type="text"
+          placeholder="예: 이번 주말 대전 축제 추천해줘"
+          @keyup.enter="send"
         />
-        <button @click="sendChatMessage" class="send-btn">전송</button>
+        <button
+          @click="send"
+          class="send-btn"
+          :disabled="isLoading || !message.trim()"
+        >
+          전송
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 import MyButton from '@/components/MyButton.vue'
+import { buildChatPayload, requestChatReply } from '@/services/chatService'
+import { loadRegionCategoryItems } from '@/services/calendarService'
 
-const isChatOpen = ref(false)
-const isChatTyping = ref(false)
-const userQuery = ref('')
+const MAX_HISTORY_LENGTH = 6
+const CHAT_HISTORY_KEY = 'chatbot_history'
+const OUT_OF_SCOPE_PATTERN = /(날씨|기상|현재 날씨|온도|환율|주식|주가|정책|교통|지진|재난|비행기|항공|대중교통|교통상황|뉴스)/i
+
+const CATEGORY_PATTERNS = [
+  { pattern: /(축제|공연|행사)/i, categories: ['축제/공연/행사'] },
+  { pattern: /(맛집|음식점|식당)/i, categories: ['음식점'] },
+  { pattern: /(숙박|호텔|게스트하우스|모텔)/i, categories: ['숙박'] },
+  {
+    pattern: /(관광지|레포츠|문화시설|쇼핑|명소|볼거리)/i,
+    categories: ['관광지', '레포츠', '문화시설', '쇼핑'],
+  },
+]
+
+const open = ref(false)
+const message = ref('')
+const defaultMessages = [
+  {
+    role: 'assistant',
+    content: '안녕하세요! 대전 여행 정보와 이 사이트 사용 방법을 도와드릴게요.',
+  },
+]
+const messages = ref([...defaultMessages])
+const isLoading = ref(false)
+const errorMessage = ref('')
 const scrollRef = ref(null)
-const chatMessages = ref([
-  { role: 'bot', content: '안녕하세요! 대동여지도 AI 가이드예요. 대전 어디가 궁금하세요?' }
-])
+const categoryData = ref({})
 
-async function scrollChatToBottom() {
-  await nextTick()
-  if (scrollRef.value) {
-    scrollRef.value.scrollTop = scrollRef.value.scrollHeight
+function loadChatHistory() {
+  const saved = localStorage.getItem(CHAT_HISTORY_KEY)
+  if (!saved) return
+
+  try {
+    const parsed = JSON.parse(saved)
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      messages.value = parsed
+    }
+  } catch {
+    messages.value = [...defaultMessages]
   }
 }
 
-function sendChatMessage() {
-  const query = userQuery.value.trim()
-  if (!query) return
+function saveChatHistory() {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages.value))
+}
 
-  chatMessages.value.push({ role: 'user', content: query })
-  userQuery.value = ''
-  isChatTyping.value = true
-  scrollChatToBottom()
+watch(
+  messages,
+  async () => {
+    saveChatHistory()
 
-  setTimeout(() => {
-    chatMessages.value.push({
-      role: 'bot',
-      content: `"${query}"에 대한 정보는 곧 연결될 예정이에요. 지도 위 동네 소식통 게시판도 함께 참고해보세요!`
+    await nextTick()
+    const el = scrollRef.value
+    if (el) {
+      el.scrollTop = el.scrollHeight
+    }
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
+  loadChatHistory()
+  categoryData.value = await loadRegionCategoryItems()
+})
+
+function getHistoryMessages() {
+  return messages.value.slice(-MAX_HISTORY_LENGTH)
+}
+
+function buildSiteContext(text) {
+  if (!categoryData.value) return ''
+
+  const matched = CATEGORY_PATTERNS.find(entry => entry.pattern.test(text))
+  if (!matched) return ''
+
+  const items = matched.categories.flatMap(cat => categoryData.value[cat] || [])
+  const list = items.slice(0, 3).map(item => {
+    return `- ${item.title}${item.dateKey ? ` (${item.dateKey})` : ''}${
+      item.subtitle ? ` - ${item.subtitle}` : ''
+    }`
+  })
+
+  if (!list.length) return ''
+
+  return [
+    `아래는 이 사이트가 보유한 대전 ${matched.categories.join(', ')} 정보입니다.`,
+    ...list,
+    '위 정보를 참고해 사용자 질문에 답변해 주세요.',
+  ].join('\n')
+}
+
+const send = async () => {
+  const text = message.value.trim()
+  if (!text) return
+
+  errorMessage.value = ''
+  messages.value.push({ role: 'user', content: text })
+  message.value = ''
+
+  if (OUT_OF_SCOPE_PATTERN.test(text)) {
+    messages.value.push({
+      role: 'assistant',
+      content:
+        '죄송합니다. 질문을 이해하지 못했거나, 현재 이 사이트에서 제공하지 않는 정보일 수 있습니다. ' +
+        '대전 관광, 맛집, 숙박, 축제, 여행 일정 관련 질문으로 다시 말씀해 주세요.',
     })
-    isChatTyping.value = false
-    scrollChatToBottom()
-  }, 700)
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const context = buildSiteContext(text)
+    const payload = buildChatPayload(text, getHistoryMessages(), context)
+    const reply = await requestChatReply(payload)
+
+    if (!reply?.trim()) {
+      throw new Error('응답을 받지 못했습니다.')
+    }
+
+    messages.value.push({ role: 'assistant', content: reply })
+  } catch (error) {
+    errorMessage.value =
+      error.message || '챗봇 응답 중 오류가 발생했습니다. 다시 시도해주세요.'
+    messages.value.push({
+      role: 'assistant',
+      content:
+        '죄송합니다. 질문을 이해하지 못했거나, 현재 이 사이트에서 제공하지 않는 정보일 수 있습니다. ' +
+        '대전 관광, 맛집, 숙박, 축제, 여행 일정 관련 질문으로 다시 말씀해 주세요.',
+    })
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -101,6 +213,8 @@ function sendChatMessage() {
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(44, 35, 24, 0.16);
+  display: flex;
+  flex-direction: column;
 }
 .chat-header {
   display: flex;
@@ -128,7 +242,7 @@ function sendChatMessage() {
   cursor: pointer;
 }
 .chat-body {
-  height: 340px;
+  flex: 1;
   padding: 14px;
   overflow-y: auto;
   background: rgba(248, 241, 224, 0.5);
@@ -140,6 +254,9 @@ function sendChatMessage() {
   font-size: 12px;
   margin-bottom: 8px;
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .bubble.user {
   margin-left: auto;
@@ -163,6 +280,11 @@ function sendChatMessage() {
   0%, 80%, 100% { opacity: 0.3; }
   40% { opacity: 1; }
 }
+.chat-error {
+  margin: 4px 2px 0;
+  font-size: 11px;
+  color: #a63c26;
+}
 .chat-input-row {
   display: flex;
   gap: 8px;
@@ -172,6 +294,7 @@ function sendChatMessage() {
 }
 .chat-input-row input {
   flex: 1;
+  min-width: 0;
   border: 1px solid rgba(44, 35, 24, 0.18);
   border-radius: 4px;
   padding: 9px 10px;
@@ -188,5 +311,10 @@ function sendChatMessage() {
   border-radius: 4px;
   cursor: pointer;
   font-weight: 700;
+  flex-shrink: 0;
+}
+.chat-input-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
