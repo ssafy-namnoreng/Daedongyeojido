@@ -15,6 +15,18 @@ import { loadRegionCategoryItems } from '@/services/calendarService'
 // 대전/충청 권역 중심 (대전 시청 부근)
 const DAEJEON_CENTER = [36.3504, 127.3845]
 
+// 카테고리별 마커 이모지
+const CATEGORY_EMOJI = {
+  관광지: '⛰️',
+  레포츠: '🚴',
+  문화시설: '🏛️',
+  쇼핑: '🛍️',
+  숙박: '🏨',
+  여행코스: '🧭',
+  음식점: '🍲',
+  '축제/공연/행사': '🎪',
+}
+
 const mapEl = ref(null)
 const loadError = ref(false)
 const markerCount = ref(0)
@@ -62,11 +74,22 @@ onMounted(async () => {
     // 좌표가 한국 범위를 벗어난 이상치(0,0 등)는 제외
     const inKorea = (lat, lng) => lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132
 
+    const makeIcon = (category) => {
+      const emoji = CATEGORY_EMOJI[category] || '📍'
+      return L.divIcon({
+        html: `<div class="region-emoji-pin">${emoji}</div>`,
+        className: 'region-emoji-pin-wrap', // 기본 흰 박스 제거
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        tooltipAnchor: [0, -20],
+      })
+    }
+
     let count = 0
     items.forEach(item => {
       if (item.lat == null || item.lng == null) return
       if (!inKorea(item.lat, item.lng)) return
-      const marker = L.marker([item.lat, item.lng])
+      const marker = L.marker([item.lat, item.lng], { icon: makeIcon(item.category) })
       marker.bindTooltip(item.title)
       group.addLayer(marker)
       count += 1
@@ -118,5 +141,27 @@ onBeforeUnmount(() => {
   .region-map {
     height: 320px;
   }
+}
+</style>
+
+<!-- Leaflet divIcon은 컴포넌트 밖에서 렌더되므로 비-scoped 전역 스타일 필요 -->
+<style>
+.region-emoji-pin-wrap {
+  background: transparent;
+  border: none;
+}
+
+.region-emoji-pin {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  background: #f8f1de;
+  border: 2px solid #33553e;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(44, 35, 24, 0.35);
 }
 </style>
